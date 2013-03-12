@@ -1,0 +1,71 @@
+"3.6 (created: 2012/12/24 13:05:56)
+
+" vim: set ft=vimperator:
+
+let mapleader=','
+
+nnoremap ! :!
+nmap E :echo<Space>
+nmap > :js<Space>
+nmap < :js <<EOF<CR>
+
+cnoremap <C-Return> <End>.com<CR>
+cnoremap <S-Return> <End>.org<CR>
+
+nnoremap j 3j
+nnoremap k 3k
+
+nmap = zi
+" nmap 0 zz
+
+nmap + <C-a>
+nmap _ <C-x>
+
+nmap h gT
+nmap l gt
+
+nmap J <C-d>
+nmap K <C-u>
+
+nmap s <C-6>
+nmap S :stop<CR>
+
+noremap U :undo<Space>
+
+set gui=none
+js <<EOF
+liberator.globalVariables['gui_status'] = 'none';
+toggle_gui = function() {
+    gui_status = liberator.globalVariables['gui_status'];
+    liberator.globalVariables['gui_status'] = (gui_status == 'none' ? 'all' : 'none');
+    liberator.execute('set gui=' + liberator.globalVariables['gui_status']);
+}
+EOF
+nmap <silent> e :js toggle_gui()<CR>
+
+style -name reader * body.vimpereader { background-color: #eeeeee; margin: 10%; }
+js <<EOF
+toggle_reader = function() {
+    liberator.execute('set ' + 'um!');
+    content.document.wrappedJSObject.body.classList.toggle('vimpereader');
+}
+EOF
+nmap <silent> C :js toggle_reader()<CR>
+
+" set wop=auto
+" set maxitems=6
+
+nmap <Leader>s :execute "source " + io.getRCFile().path<CR>
+
+" set ds=googlehk
+
+" au PageLoad \.pdf$ :pdfjs zoom page-width
+
+" OS detection section
+js <<EOF
+if (navigator.oscpu.indexOf('Mac OS X') >= 0) {
+    liberator.execute('set editor=\'bash -lc "mvim -g -f \$*" mvim \'');
+}
+EOF
+
+set fs
