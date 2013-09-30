@@ -2,12 +2,13 @@
 
 " vim: set ft=vimperator:
 
-let mapleader=','
+" let mapleader=','
 
 nnoremap ! :!
-nmap E :echo<Space>
-nmap > :js<Space>
-nmap < :js <<EOF<CR>
+nnoremap E :echo<Space>
+nnoremap > :js<Space>
+nnoremap < :js <<EOF<CR>
+nnoremap \" :emenu<Space>
 
 cnoremap <C-Return> <End>.com<CR>
 cnoremap <S-Return> <End>.org<CR>
@@ -20,6 +21,9 @@ nmap = zi
 
 nmap + <C-a>
 nmap _ <C-x>
+
+noremap <C-h> h
+noremap <C-l> l
 
 nmap h gT
 nmap l gt
@@ -38,34 +42,75 @@ liberator.globalVariables['gui_status'] = 'none';
 toggle_gui = function() {
     gui_status = liberator.globalVariables['gui_status'];
     liberator.globalVariables['gui_status'] = (gui_status == 'none' ? 'all' : 'none');
-    liberator.execute('set gui=' + liberator.globalVariables['gui_status']);
+    liberator.execute('set gui=' + liberator.globalVariables['gui_status'], null, true);
 }
 EOF
 nmap <silent> e :js toggle_gui()<CR>
 
-style -name reader * body.vimpereader { background-color: #eeeeee; margin: 10%; }
+" window.addEventListener('devicelight', function(event) {
+"  console.log(event.value);
+"});
+
+
+" former gray version
+" style -name reader * body.vimpereader { background-color: #E6E6E6; margin: 10%; }
+" sepia default version
+" style -name reader * body.vimpereader { background-color: #F1E9D1; color: #3D2816; margin: 10%; }
+" sepia backup version
+" style -name reader * body.vimpereader { background-color: #F1E9D1; color: #704F32; margin: 10%; }
+" night version
+" style -name reader * body.vimpereader { background-color: #000000; color: #9D9D9D; margin: 10%; }
 js <<EOF
+set_reader_style = function(event) {
+    if (event && event.value < 50) {
+        liberator.execute('style -name reader * body.vimpereader { background-color: #000000; color: #9D9D9D; margin: 10%; }', null, true);
+    } else {
+        liberator.execute('style -name reader * body.vimpereader { background-color: #F1E9D1; color: #704F32; margin: 10%; }', null, true);
+    }
+};
+window.addEventListener('devicelight', set_reader_style);
 toggle_reader = function() {
-    liberator.execute('set ' + 'um!');
+    liberator.execute('set ' + 'um!', null, true);
     content.document.wrappedJSObject.body.classList.toggle('vimpereader');
-}
+};
+set_reader_style();
 EOF
 nmap <silent> C :js toggle_reader()<CR>
+
+map <C-;> :js var tmp = content.document.getElementsByTagName("textarea"); if (tmp.length) tmp[0].focus();<CR>
 
 " set wop=auto
 " set maxitems=6
 
-nmap <Leader>s :execute "source " + io.getRCFile().path<CR>
+nnoremap <leader>s :exe "source " + io.getRCFile().path<CR>:echom "Sourced: .vimperatorrc"<CR>
+nnoremap <leader>l :js util.copyToClipboard('[[' + content.document.wrappedJSObject.title.replace(/\|/g,'') + '|' + content.location.href + ']]', true)<CR>
+nnoremap <leader>h :noh<CR>
+" nnoremap <leader><Space> <C-B>
 
-" set ds=googlehk
+" set nextpattern=\s*下一页|下一张|下一篇|下页|后页\s*,^\bnext\b,\\bnext\\b,^>$,^(>>|?)$,^(>|?),(>|?)$,\\bmore\\b
+" set previouspattern=\s*上一页|上一张|上一篇|上页|前页\s*,^\bprev|previous\b,\\bprev|previous\\b,^<$,^(<<|?)$,^(<|?),(<|?)$
+
+" set ds=googleip
+set ds=google
 
 " au PageLoad \.pdf$ :pdfjs zoom page-width
 
 " OS detection section
 js <<EOF
 if (navigator.oscpu.indexOf('Mac OS X') >= 0) {
-    liberator.execute('set editor=\'bash -lc "mvim -g -f \$*" mvim \'');
+    // liberator.execute('set editor=\'bash -lc "mvim -g -f \$*" mvim \'');
+    liberator.execute('set editor=\'~/bin/subl -w\'', null, true);
 }
 EOF
 
-set fs
+" set editor=~/bin/subl
+
+" self control
+" au LocationChange (weibo|douban)\\.com :tabc
+au LocationChange (weibo|douban|tieba\\.baidu)\\.com :js if(new Date().getDay()!=0 && new Date().getDay()!=6 && new Date().getHours()>=8 && new Date().getHours()<20){liberator.execute('tabc');}
+
+set nosb
+
+" better after vimperator starts
+" au VimperatorEnter :set fs
+js if(!window.fullScreen) {setTimeout(function() {liberator.execute('set fs', null, true);}, 1000);}
